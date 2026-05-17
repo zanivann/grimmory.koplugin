@@ -358,7 +358,7 @@ function ReadingSessionRepository:getReadingProgressForBook(book_md5)
 
             stmt:bind(book_md5)
 
-            local row = stmt:rows()
+            local row = stmt:rows()()
 
             stmt:close()
 
