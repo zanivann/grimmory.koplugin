@@ -145,11 +145,15 @@ end
 function Grimmory:onReaderReady()
     logger:dbg("Document open and ready")
 
+    if self.settings:getSyncReadingProgress() then
+        self:syncProgressForOpenBook()
+    end
+
     self.reading_recorder:onSessionStart()
 end
 
 function Grimmory:onPageUpdate(page)
-    logger:info("Page Update", page)
+    logger:dbg("Page Update", page)
 
     -- Run after everything else does for a page event.
     -- This prevents issues like the previous page's xpointer being
