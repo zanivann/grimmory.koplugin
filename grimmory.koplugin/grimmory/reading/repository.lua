@@ -25,7 +25,6 @@ end
 ---| "session-end"
 
 ---@class ReadingSession
----@field book_partial_md5 string
 ---@field book_md5 string
 ---@field book_path string
 ---@field start_time number
@@ -41,7 +40,6 @@ end
 ---@class ReadingSessionEvent
 ---@field session_id number
 ---@field event_type ReadingSessionEventType
----@field book_partial_md5 string
 ---@field book_md5 string
 ---@field book_path string
 ---@field timestamp number
@@ -50,7 +48,6 @@ end
 ---@field xpointer string | nil
 
 ---@class ReadingSessionProgress
----@field book_partial_md5 string
 ---@field book_md5 string
 ---@field book_path string
 ---@field end_time number
@@ -142,7 +139,6 @@ end
 ---@return boolean ok
 ---@return integer | nil book_id
 function ReadingSessionRepository:upsertBook(book_path)
-    local full_md5 = md5(book_path)
     local partial_md5 = util.partialMD5(book_path)
 
     local ok, book_id = self:withSessionDatabase(
@@ -153,13 +149,12 @@ function ReadingSessionRepository:upsertBook(book_path)
                 INSERT OR IGNORE INTO book
                     (
                         book_path,
-                        full_md5,
                         partial_md5
                     )
-                VALUES (?, ?, ?);
+                VALUES (?, ?);
             ]])
 
-            insert_stmt:bind(book_path, full_md5, partial_md5)
+            insert_stmt:bind(book_path, partial_md5)
             insert_stmt:step()
             insert_stmt:close()
 
@@ -167,10 +162,10 @@ function ReadingSessionRepository:upsertBook(book_path)
             -- already had existed.
             local select_stmt = conn:prepare([[
                 SELECT id FROM book
-                WHERE book_path = ? AND full_md5 = ? AND partial_md5 = ?
+                WHERE book_path = ? AND partial_md5 = ?
             ]])
 
-            select_stmt:bind(book_path, full_md5, partial_md5)
+            select_stmt:bind(book_path, partial_md5)
             local row = select_stmt:step()
 
             if not row then
@@ -274,7 +269,6 @@ function ReadingSessionRepository:getReadingProgress()
                 SELECT
                     book.book_path,
                     book.partial_md5,
-                    book.full_md5,
 
                     book_session.created_at,
                     book_session.current_page,
@@ -297,8 +291,8 @@ function ReadingSessionRepository:getReadingProgress()
             local results = {}
 
             for row in stmt:rows() do
-                local end_page = row[5]
-                local page_count = row[6]
+                local end_page = row[4]
+                local page_count = row[5]
 
                 local end_progress = end_page / page_count
 
@@ -306,12 +300,11 @@ function ReadingSessionRepository:getReadingProgress()
                 local progress = {
                     book_path = row[1],
                     book_md5 = row[2],
-                    book_partial_md5 = row[3],
-                    end_time = row[4],
+                    end_time = row[3],
                     end_page = end_page,
                     page_count = page_count,
                     end_progress = end_progress,
-                    end_location = row[7],
+                    end_location = row[6],
                 }
                 table.insert(results, progress)
             end
@@ -333,13 +326,12 @@ end
 ---@param book_md5 string
 ---@return ReadingSessionProgress | nil progress
 function ReadingSessionRepository:getReadingProgressForBook(book_md5)
-    local ok, result = ReadingSessionRepository:withSessionDatabase(
+    local ok, result = self:withSessionDatabase(
         function(conn)
             local stmt = conn:prepare([[
                 SELECT
                     book.book_path,
                     book.partial_md5,
-                    book.full_md5,
 
                     book_session.created_at,
                     book_session.current_page,
@@ -356,11 +348,11 @@ function ReadingSessionRepository:getReadingProgressForBook(book_md5)
                 JOIN book_event ON last_event.event_id = book_event.id
                 JOIN book_session ON book_event.session_id = book_session.id
                 JOIN book ON book_session.book_id = book.id
-                WHERE book_md5 = ? OR book_partial_md5 = ?
+                WHERE book.partial_md5 = ?
                 LIMIT 1
             ]])
 
-            stmt:bind(book_md5, book_md5)
+            stmt:bind(book_md5)
 
             local row = stmt:rows()
 
@@ -370,20 +362,19 @@ function ReadingSessionRepository:getReadingProgressForBook(book_md5)
                 return nil
             end
 
-            local end_page = row[5]
-            local page_count = row[6]
+            local end_page = row[4]
+            local page_count = row[5]
 
             local end_progress = end_page / page_count
 
             return {
                     book_path = row[1],
                     book_md5 = row[2],
-                    book_partial_md5 = row[3],
-                    end_time = row[4],
+                    end_time = row[3],
                     end_page = end_page,
                     page_count = page_count,
                     end_progress = end_progress,
-                    end_location = row[7],
+                    end_location = row[6],
             }
         end
     )
@@ -399,13 +390,12 @@ end
 ---@param since integer
 ---@return ReadingSessionEvent[]
 function ReadingSessionRepository:getEvents(since)
-    local ok, results = ReadingSessionRepository:withSessionDatabase(
+    local ok, results = self:withSessionDatabase(
         function(conn)
             local stmt = conn:prepare([[
                 SELECT
                     b.book_path,
                     b.partial_md5,
-                    b.full_md5,
 
                     e.session_id,
                     e.event_type,
@@ -429,14 +419,13 @@ function ReadingSessionRepository:getEvents(since)
                 ---@type ReadingSessionEvent
                 local event = {
                     book_path = row[1],
-                    book_partial_md5 = row[2],
-                    book_md5 = row[3],
-                    session_id = row[4],
-                    event_type = row[5],
-                    timestamp = tonumber(row[6]) or 0,
-                    page = tonumber(row[7]) or 0,
-                    page_count = tonumber(row[8]) or 0,
-                    xpointer = row[9],
+                    book_md5 = row[2],
+                    session_id = row[3],
+                    event_type = row[4],
+                    timestamp = tonumber(row[5]) or 0,
+                    page = tonumber(row[6]) or 0,
+                    page_count = tonumber(row[7]) or 0,
+                    xpointer = row[8],
                 }
 
                 table.insert(results, event)
@@ -521,7 +510,6 @@ function ReadingSessionRepository:getSessions(since)
             ---@type ReadingSession
             local new_session = {
                 book_md5 = event.book_md5,
-                book_partial_md5 = event.book_partial_md5,
                 book_path = event.book_path,
                 start_time = event.timestamp,
                 end_time = event.timestamp,

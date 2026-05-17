@@ -3,8 +3,6 @@ CREATE TABLE IF NOT EXISTS book
     id          integer PRIMARY KEY autoincrement,
     book_path   text NOT NULL,
     partial_md5 text NOT NULL,
-    full_md5    text NOT NULL,
-    UNIQUE (book_path, full_md5),
     UNIQUE (book_path, partial_md5)
 );
 
