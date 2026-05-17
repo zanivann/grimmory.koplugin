@@ -466,7 +466,21 @@ function GrimmorySynchronize:synchronizeProgress(callback)
 
     -- From Koreader to grimmory
     for _, progress in ipairs(reading_progress_records) do
-        self.reading_progress_manager:pushRemoteProgress(progress)
+        local ok = self.reading_progress_manager:pushRemoteProgress(progress)
+
+        if ok then
+            callback({
+                state = "progress-pushed",
+                book_path = progress.book_path,
+                book_md5 = progress.book_md5,
+            })
+        else
+            callback({
+                state = "progress-failed",
+                book_path = progress.book_path,
+                book_md5 = progress.book_md5,
+            })
+        end
     end
 end
 

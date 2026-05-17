@@ -448,10 +448,10 @@ function GrimmoryAPI:pushReadingProgress(username, auth_key, device, device_id, 
 
     if not ok then
         logger:err("Unable to push progress for book:", book_md5, "-", body)
-        return false, nil
+        return false, body
     end
 
-    return ok
+    return ok, nil
 end
 
 ---@param username string
