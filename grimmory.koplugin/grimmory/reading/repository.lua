@@ -260,8 +260,9 @@ function ReadingSessionRepository:insertBookEvent(session_id, event_type, curren
     end
 end
 
+---@param look_back number | nil
 ---@return ReadingSessionProgress[] progress
-function ReadingSessionRepository:getReadingProgress()
+function ReadingSessionRepository:getReadingProgress(look_back)
     local ok, results = ReadingSessionRepository:withSessionDatabase(
         function(conn)
             local stmt = conn:prepare([[
@@ -279,12 +280,17 @@ function ReadingSessionRepository:getReadingProgress()
                         MAX(e.id) AS event_id
                     FROM book_event e
                     JOIN book_session s ON s.id = e.session_id
+                    WHERE e.created_at < ?
                     GROUP BY s.book_id
                 ) AS last_event
                 JOIN book_event ON last_event.event_id = book_event.id
                 JOIN book_session ON book_event.session_id = book_session.id
                 JOIN book ON book_session.book_id = book.id;
             ]])
+
+            local time_threshold = os.time() - (look_back or 0)
+
+            stmt:bind(time_threshold)
 
             ---@type ReadingSessionProgress[]
             local results = {}
@@ -328,8 +334,9 @@ function ReadingSessionRepository:getReadingProgress()
 end
 
 ---@param book_md5 string
+---@param look_back number | nil
 ---@return ReadingSessionProgress | nil progress
-function ReadingSessionRepository:getReadingProgressForBook(book_md5)
+function ReadingSessionRepository:getReadingProgressForBook(book_md5, look_back)
     local ok, result = self:withSessionDatabase(
         function(conn)
             local stmt = conn:prepare([[
@@ -347,16 +354,19 @@ function ReadingSessionRepository:getReadingProgressForBook(book_md5)
                         MAX(e.id) AS event_id
                     FROM book_event e
                     JOIN book_session s ON s.id = e.session_id
+                    WHERE e.created_at < ?
                     GROUP BY s.book_id
                 ) AS last_event
                 JOIN book_event ON last_event.event_id = book_event.id
                 JOIN book_session ON book_event.session_id = book_session.id
                 JOIN book ON book_session.book_id = book.id
                 WHERE book.partial_md5 = ?
-                LIMIT 1
+                LIMIT 1;
             ]])
 
-            stmt:bind(book_md5)
+            local time_threshold = os.time() - (look_back or 0)
+
+            stmt:bind(time_threshold, book_md5)
 
             local row = stmt:rows()()
 
