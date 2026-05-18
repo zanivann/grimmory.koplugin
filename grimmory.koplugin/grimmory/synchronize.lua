@@ -422,7 +422,7 @@ function GrimmorySynchronize:synchronizeBooks(callback)
         end
 
         if not book_exists then
-            if not download_path ~= nil then
+            if download_path ~= nil then
                 logger:info("Downloading book", book.id, "to", download_path)
 
                 local ok, message = self:downloadBook(book.id, download_path)
