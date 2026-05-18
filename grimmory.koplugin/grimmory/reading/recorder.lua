@@ -78,7 +78,7 @@ function ReadingRecorder:onSessionStart()
 
     if self.session_id ~= nil then
         if book_path ~= self.session_book_path then
-            -- If the session is active and the book path has changed we 
+            -- If the session is active and the book path has changed we
             -- somehow missed the end session event
             self:onSessionEnd()
         else
@@ -115,7 +115,7 @@ function ReadingRecorder:onSessionStart()
 end
 
 function ReadingRecorder:onPageUpdate()
-    -- If the session is active and the book path has changed we 
+    -- If the session is active and the book path has changed we
     -- somehow missed the end session event
     local book_path = self:getOpenBookPath()
     if self.session_id and book_path ~= self.session_book_path then

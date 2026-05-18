@@ -41,11 +41,10 @@ function GithubAPI:request(method, uri, data, sink)
         ["Accept"] = "application/vnd.github+json",
     }
 
-    local body = nil
     local source = nil
 
     if data then
-        body = json.encode(data)
+        local body = json.encode(data)
 
         headers["Content-Type"] = "application/json"
         headers["Content-Length"] = string.len(body)

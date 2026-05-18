@@ -144,12 +144,12 @@ function GrimmoryExecutor:run(runnable, on_progress)
 
             local runnable_ok, runnable_result = pcall(runnable, progress_callback)
 
-            local runnable_result = {
+            local runnable_state = {
                 __runnable_ok = runnable_ok,
                 __runnable_result = runnable_result,
             }
 
-            local write_ok, write_result = writeObjectToFD(child_write_fd, runnable_result)
+            local write_ok, write_result = writeObjectToFD(child_write_fd, runnable_state)
 
             if not write_ok then
                 logger:err("Could not write final state back from subprocess:", write_result)

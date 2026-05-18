@@ -12,9 +12,6 @@ local GrimmoryLogger = require("grimmory/logger")
 
 local logger = GrimmoryLogger:new()
 
-
-local AUTOMATIC_UPDATE_SECONDS = 7200
-
 local function verifyDigest(path, digest)
     local digest_type, expected_digest_hex = digest:match("(%w+):(%x+)")
 
@@ -171,7 +168,9 @@ function GrimmorySelfUpdater:downloadLatestRelease(progress_callback)
         return false, g("No latest release")
     end
 
-    local download_path = self.release_cache_path .. "/plugin-" .. self.latest_known_version .. "-" .. os.time() .. ".zip"
+    local download_path = self.release_cache_path ..
+        "/plugin-" .. self.latest_known_version ..
+        "-" .. os.time() .. ".zip"
 
     local download_directory, _ = util.splitFilePathName(download_path)
 

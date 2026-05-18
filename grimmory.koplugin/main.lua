@@ -366,7 +366,13 @@ function Grimmory:onGrimmorySync(verbose)
             local message
             if sessionErrorCount > 0 or bookErrorCount > 0 then
                 message = T(
-                    _("Completed Grimmory sync\n%1 session(s) recorded\n%2 session(s) failed\n%3 book(s) downloaded\n%4 book(s) failed"),
+                    _(
+                        "Completed Grimmory sync\n" +
+                        "%1 session(s) recorded\n" +
+                        "%2 session(s) failed\n" +
+                        "%3 book(s) downloaded\n" +
+                        "%4 book(s) failed"
+                    ),
                     sessionCount,
                     sessionErrorCount,
                     bookCount,

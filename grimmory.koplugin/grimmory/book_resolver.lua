@@ -68,10 +68,8 @@ function GrimmoryBookResolver:refreshBooks(books)
             end
         end
 
-        local filename = nil
         if book.primary_file and book.primary_file.filename then
-            filename = book.primary_file.filename
-            self.identifiers_to_book_id["filename:" .. filename] = book.id
+            self.identifiers_to_book_id["filename:" .. book.primary_file.filename] = book.id
         end
     end
 end

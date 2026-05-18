@@ -75,7 +75,7 @@ local function parseBook(book)
     }
 
     local primary_file = nil
-    
+
     if book["primaryFile"] and book["primaryFile"]["fileName"] then
         primary_file = {
             filename = book["primaryFile"]["fileName"]
@@ -172,11 +172,10 @@ function GrimmoryAPI:rawRequest(method, uri, data, headers, sink)
         return false, 0, "unknown url scheme"
     end
 
-    local body = nil
     local source = nil
 
     if data then
-        body = json.encode(data)
+        local body = json.encode(data)
 
         headers["Content-Type"] = "application/json"
         headers["Content-Length"] = string.len(body)
@@ -290,7 +289,7 @@ function GrimmoryAPI:request(method, path, data, headers, sink)
 end
 
 function GrimmoryAPI:testConnection(base_uri, username, password)
-    base_uri = base_uri:gsub("/+$", "") 
+    base_uri = base_uri:gsub("/+$", "")
 
     local access_token = self:getToken(
         base_uri,
@@ -384,7 +383,15 @@ end
 ---@param end_progress number
 ---@param start_location string
 ---@param end_location string
-function GrimmoryAPI:recordSession(book_id, start_time, end_time, start_progress, end_progress, start_location, end_location)
+function GrimmoryAPI:recordSession(
+    book_id,
+    start_time,
+    end_time,
+    start_progress,
+    end_progress,
+    start_location,
+    end_location
+)
     local duration_seconds = end_time - start_time
     local progress_delta = math.max(0, end_progress - start_progress)
 
@@ -475,7 +482,16 @@ function GrimmoryAPI:setKoreaderCredentials(auth_key, auth_secret)
     return true
 end
 
-function GrimmoryAPI:pushReadingProgress(username, auth_key, device, device_id, book_md5, timestamp, percentage, location)
+function GrimmoryAPI:pushReadingProgress(
+    username,
+    auth_key,
+    device,
+    device_id,
+    book_md5,
+    timestamp,
+    percentage,
+    location
+)
     local request = {
         document = book_md5,
         timestamp = timestamp,

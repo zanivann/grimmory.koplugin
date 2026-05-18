@@ -105,7 +105,7 @@ function GrimmorySynchronize:synchronizeSessions(callback)
             local book_id = self.book_resolver:getBookId(session.book_path, session.book_md5)
 
             local ok = false
-            local body = nil
+            local body
             if book_id == nil then
                 body = "Could not match local book to Grimmory"
             else
@@ -269,7 +269,10 @@ function GrimmorySynchronize:synchronizeShelves(callback)
             -- know one exists we should attach it.
             shelf_id = shelf_name_to_id[collection_name:lower()]
 
-            logger:info("Found an existing collection that can be attached to a shelf:", collection_name, ";" , shelf_id)
+            logger:info(
+                "Found an existing collection that can be attached to a shelf:",
+                collection_name, ";" , shelf_id
+            )
 
             ReadCollection.coll_settings[collection_name].connectorId = shelf_id
 

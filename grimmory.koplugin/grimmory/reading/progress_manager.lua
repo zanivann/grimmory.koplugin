@@ -188,7 +188,7 @@ function ReadingProgressManager:getRemoteProgressForBook(book_path)
     end
 
     ---@type ReadingSessionProgress
-    local progress = {
+    local source_progress = {
         book_path = book_path,
         book_md5 = progress.document,
         end_time = progress.timestamp,
@@ -197,7 +197,7 @@ function ReadingProgressManager:getRemoteProgressForBook(book_path)
         end_xpointer = xpointer,
     }
 
-    return source_name, source_id, progress
+    return source_name, source_id, source_progress
 end
 
 ---@param progress ReadingSessionProgress

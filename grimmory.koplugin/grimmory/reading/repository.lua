@@ -1,7 +1,6 @@
 local SQ3 = require("lua-ljsqlite3/init")
 local DataStorage = require("datastorage")
 local util = require("util")
-local md5 = require("ffi/sha2").md5
 
 local GrimmoryLogger = require("grimmory/logger")
 
