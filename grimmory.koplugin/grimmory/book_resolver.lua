@@ -27,16 +27,19 @@ end
 ---@class GrimmoryBookResolver
 ---@field private md5_to_book_id_cache any
 ---@field private identifiers_to_book_id table<string, number>
-local GrimmoryBookResolver = {
-    md5_to_book_id_cache = Cache:new({ slots = 4096 }),
-    identifiers_to_book_id = {},
-}
+local GrimmoryBookResolver = {}
 
 function GrimmoryBookResolver:new()
     local o = {}
     setmetatable(o, self)
     self.__index = self
+    o:init()
     return o
+end
+
+function GrimmoryBookResolver:init()
+    self.md5_to_book_id_cache = Cache:new({ slots = 4096 })
+    self.identifiers_to_book_id = {}
 end
 
 ---@param books Book[]
