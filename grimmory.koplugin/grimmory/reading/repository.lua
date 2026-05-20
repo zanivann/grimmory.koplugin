@@ -125,6 +125,7 @@ function ReadingSessionRepository:withSessionDatabase(callback, flags)
         self.sessions_database_path,
         flags
     )
+    database:set_busy_timeout(1000)
 
     local ok, result = pcall(callback, database)
 
