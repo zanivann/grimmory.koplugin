@@ -521,14 +521,12 @@ function GrimmoryLocalRepository:getPendingSessions(book_id)
             if isPartOfSession(sessions[#sessions], event) then
                 logger:dbg("Collapsed session for book", event.book_md5)
                 collapsedSession = true
-                sessions[#sessions].end_time = math.max(event.timestamp, sessions[#sessions].end_time)
 
-                -- If the "progress" is further
-                if read_progress > sessions[#sessions].end_progress then
-                    sessions[#sessions].end_page = event.page
-                    sessions[#sessions].end_progress = read_progress
-                    sessions[#sessions].end_xpointer = event.xpointer
-                end
+                -- set the end of this session to whatever the last event is
+                sessions[#sessions].end_time = event.timestamp
+                sessions[#sessions].end_page = event.page
+                sessions[#sessions].end_progress = read_progress
+                sessions[#sessions].end_xpointer = event.xpointer
             end
         end
 
