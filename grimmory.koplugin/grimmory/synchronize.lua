@@ -643,14 +643,14 @@ function GrimmorySynchronize:pullBooks(callback)
         end
     end
 
-    if self.settings:getDownloadRemoveBooks() then
-        logger:dbg("Checking if any books need to be removed")
+    logger:dbg("Checking existing books on disk in download directory")
 
-        -- Iterate through books in download directory and
-        -- remove when not in the `seen_books` set
-        util.findFiles(
-            download_directory,
-            function(path)
+    -- Iterate through books in download directory and
+    -- remove when not in the `seen_books` set
+    util.findFiles(
+        download_directory,
+        function(path)
+            local ok, result = pcall(function()
                 if path:match("%.sdr/") then
                     -- Ignore sidecar directory
                     return
@@ -676,11 +676,23 @@ function GrimmorySynchronize:pullBooks(callback)
                     return
                 end
 
-                self:removeBook(path)
-            end,
-            true
-        )
-    end
+                logger:dbg("Book removed from upstream:", path)
+
+                if self.settings:getDownloadRemoveBooks() then
+                    self:removeBook(path)
+                else
+                    -- Even if we don't remove the book we should remove it
+                    -- from all Grimmory shelves.
+                    self:associateWithShelves(path, {})
+                end
+            end)
+
+            if not ok then
+                logger:err("Failed during cleanup:", path, "-", result)
+            end
+        end,
+        true
+    )
 
     -- During pulling books we may have updated the collections that
     -- books are in which need to be persisted to disk
