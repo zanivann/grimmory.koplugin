@@ -134,6 +134,10 @@ local function normalize_xpointer(xpointer)
     -- /text().0 -> /text()
     xpointer = xpointer:gsub("%.0$", "")
 
+    -- Normalize tags to fix CFI resolution mismatches from the server (span vs text())
+    xpointer = xpointer:gsub("/text%(%)", "")
+    xpointer = xpointer:gsub("/span", "")
+
     return xpointer
 end
 
@@ -189,8 +193,8 @@ local function merge_annotations(local_annotations, remote_annotations)
                     existing_annotation.drawer = annotation.drawer
                     existing_annotation.chapter = annotation.chapter
                     existing_annotation.text = annotation.text
-                    existing_annotation.page = annotation.page
                     existing_annotation.note = annotation.note
+                    -- Do not overwrite `page` here to protect the local reference
                 end
             end
 
@@ -202,15 +206,20 @@ local function merge_annotations(local_annotations, remote_annotations)
             -- Apply to matching grimmory ID
             local existing_annotation = local_grimmory_ids[grimmory_id]
 
-            existing_annotation.pos0 = annotation.pos0
-            existing_annotation.pos1 = annotation.pos1
+            -- Only update local positional data if it logically changed 
+            -- (protects local text() tags from being corrupted by remote span tags)
+            if not is_same_xpointer(existing_annotation.pos0, annotation.pos0) then
+                existing_annotation.pos0 = annotation.pos0
+                existing_annotation.pos1 = annotation.pos1
+                existing_annotation.page = annotation.page
+            end
+
             existing_annotation.datetime = annotation.datetime
             existing_annotation.datetime_updated = annotation.datetime_updated
             existing_annotation.color = annotation.color
             existing_annotation.drawer = annotation.drawer
             existing_annotation.chapter = annotation.chapter
             existing_annotation.text = annotation.text
-            existing_annotation.page = annotation.page
             existing_annotation.note = annotation.note
         end
     end
