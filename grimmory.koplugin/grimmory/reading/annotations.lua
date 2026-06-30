@@ -206,7 +206,7 @@ local function merge_annotations(local_annotations, remote_annotations)
             -- Apply to matching grimmory ID
             local existing_annotation = local_grimmory_ids[grimmory_id]
 
-            -- Only update local positional data if it logically changed 
+            -- Only update local positional data if it logically changed
             -- (protects local text() tags from being corrupted by remote span tags)
             if not is_same_xpointer(existing_annotation.pos0, annotation.pos0) then
                 existing_annotation.pos0 = annotation.pos0
